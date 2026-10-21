@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07080a"/>
+      <stop offset="50%" stop-color="#0f141c"/>
+      <stop offset="100%" stop-color="#161e2e"/>
+    </linearGradient>
+
+    <!-- Golden Hour / Bokeh Glow -->
+    <radialGradient id="bokehGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#d97706" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#b45309" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Lens Ring Metallic Gradient -->
+    <linearGradient id="metalRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="35%" stop-color="#1e293b"/>
+      <stop offset="70%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <!-- DOF Focus Beam Gradient -->
+    <linearGradient id="focusBeam" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.1"/>
+      <stop offset="45%" stop-color="#10b981" stop-opacity="0.7"/>
+      <stop offset="55%" stop-color="#10b981" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base background square with rounded corners (iOS/Android maskable friendly) -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- Subtle grid reticle for EVF viewfinder feel -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.4"/>
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#38bdf8" stroke-width="1" opacity="0.3"/>
+  <line x1="256" y1="36" x2="256" y2="70" stroke="#64748b" stroke-width="2" opacity="0.7"/>
+  <line x1="256" y1="442" x2="256" y2="476" stroke="#64748b" stroke-width="2" opacity="0.7"/>
+  <line x1="36" y1="256" x2="70" y2="256" stroke="#64748b" stroke-width="2" opacity="0.7"/>
+  <line x1="442" y1="256" x2="476" y2="256" stroke="#64748b" stroke-width="2" opacity="0.7"/>
+
+  <!-- Optical DOF Beam Cone (Horisontal) -->
+  <polygon points="110,210 390,160 390,352 110,302" fill="url(#focusBeam)"/>
+
+  <!-- Outer Lens Ring -->
+  <circle cx="256" cy="256" r="130" fill="none" stroke="url(#metalRing)" stroke-width="14"/>
+  <circle cx="256" cy="256" r="118" fill="#080c14" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Bokeh glow sphere inside lens -->
+  <circle cx="256" cy="256" r="75" fill="url(#bokehGlow)"/>
+
+  <!-- Aperture Blades (Blændelameller) -->
+  <g fill="none" stroke="#f8fafc" stroke-width="2.5" opacity="0.85">
+    <path d="M 215 195 L 297 195 L 256 220 Z" fill="#1e293b" fill-opacity="0.6"/>
+    <polygon points="256,186 316,221 316,291 256,326 196,291 196,221" stroke="#38bdf8" stroke-width="3" fill="#0f172a" fill-opacity="0.85"/>
+  </g>
+
+  <!-- Sharp Focal Plane Crosshair in center -->
+  <circle cx="256" cy="256" r="30" fill="none" stroke="#10b981" stroke-width="3"/>
+  <line x1="256" y1="216" x2="256" y2="296" stroke="#10b981" stroke-width="2"/>
+  <line x1="216" y1="256" x2="296" y2="256" stroke="#10b981" stroke-width="2"/>
+  <circle cx="256" cy="256" r="4" fill="#10b981"/>
+
+  <!-- DOF Near & Far Limit Marks -->
+  <line x1="175" y1="180" x2="175" y2="332" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="337" y1="180" x2="337" y2="332" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Text Badge DOF -->
+  <rect x="186" y="380" width="140" height="32" rx="16" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="256" y="401" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="14" font-weight="800" fill="#f8fafc" text-anchor="middle" letter-spacing="3">DOF • HUD</text>
+</svg>
