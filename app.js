@@ -72,6 +72,13 @@
     }
   ];
 
+  // Standard 1/3-stop blændeskala
+  const APERTURE_STOPS = [
+    1.0, 1.1, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.5, 2.8,
+    3.2, 3.5, 4.0, 4.5, 5.0, 5.6, 6.3, 7.1, 8.0, 9.0,
+    10.0, 11.0, 13.0, 14.0, 16.0, 18.0, 20.0, 22.0, 25.0, 29.0, 32.0
+  ];
+
   let visualizer = null;
   let deferredPrompt = null;
 
@@ -87,10 +94,15 @@
     dom.focalInput = document.getElementById('focalInput');
     dom.focalDisplay = document.getElementById('focalDisplay');
     dom.focalEquiv = document.getElementById('focalEquiv');
+    dom.btnFocalMinus = document.getElementById('btnFocalMinus');
+    dom.btnFocalPlus = document.getElementById('btnFocalPlus');
 
     dom.apertureSlider = document.getElementById('apertureSlider');
     dom.apertureDisplay = document.getElementById('apertureDisplay');
     dom.apertureButtons = document.querySelectorAll('.f-stop-btn');
+    dom.btnApertureMinus = document.getElementById('btnApertureMinus');
+    dom.btnAperturePlus = document.getElementById('btnAperturePlus');
+    dom.irisPupilSummary = document.getElementById('irisPupilSummary');
 
     dom.distanceSlider = document.getElementById('distanceSlider');
     dom.distanceInput = document.getElementById('distanceInput');
@@ -169,12 +181,6 @@
       svgDiagram: svg,
       evfContainer: evf
     });
-
-    visualizer.onDistanceChange((newDist) => {
-      state.distance = parseFloat(newDist.toFixed(2));
-      syncDistanceInputs();
-      update();
-    });
   }
 
   function renderPresetsBar() {
@@ -252,20 +258,32 @@
       });
     }
 
-    // Brændvidde slider & input
+    // Brændvidde slider
     if (dom.focalSlider) {
       dom.focalSlider.addEventListener('input', (e) => {
         state.focalLength = Number(e.target.value);
-        if (dom.focalInput) dom.focalInput.value = state.focalLength;
+        updateFocalButtonsState();
         update();
       });
     }
 
-    if (dom.focalInput) {
-      dom.focalInput.addEventListener('change', (e) => {
-        let val = Math.max(8, Math.min(800, Number(e.target.value) || 50));
-        state.focalLength = val;
-        if (dom.focalSlider) dom.focalSlider.value = val;
+    // Brændvidde step knapper (− / +)
+    if (dom.btnFocalMinus) {
+      dom.btnFocalMinus.addEventListener('click', () => {
+        const step = state.focalLength > 100 ? 10 : (state.focalLength > 24 ? 5 : 2);
+        state.focalLength = Math.max(10, state.focalLength - step);
+        if (dom.focalSlider) dom.focalSlider.value = state.focalLength;
+        updateFocalButtonsState();
+        update();
+      });
+    }
+
+    if (dom.btnFocalPlus) {
+      dom.btnFocalPlus.addEventListener('click', () => {
+        const step = state.focalLength >= 100 ? 10 : (state.focalLength >= 24 ? 5 : 2);
+        state.focalLength = Math.min(600, state.focalLength + step);
+        if (dom.focalSlider) dom.focalSlider.value = state.focalLength;
+        updateFocalButtonsState();
         update();
       });
     }
@@ -276,7 +294,7 @@
         const mm = Number(btn.dataset.focal);
         state.focalLength = mm;
         if (dom.focalSlider) dom.focalSlider.value = mm;
-        if (dom.focalInput) dom.focalInput.value = mm;
+        updateFocalButtonsState();
         update();
       });
     });
@@ -286,6 +304,41 @@
       dom.apertureSlider.addEventListener('input', (e) => {
         const val = Number(e.target.value);
         state.aperture = val;
+        updateApertureButtonsState();
+        update();
+      });
+    }
+
+    // Blænde 1/3-stop step knapper (− / +)
+    if (dom.btnApertureMinus) {
+      dom.btnApertureMinus.addEventListener('click', () => {
+        const current = state.aperture;
+        let target = APERTURE_STOPS[0];
+        for (let i = APERTURE_STOPS.length - 1; i >= 0; i--) {
+          if (APERTURE_STOPS[i] < current - 0.05) {
+            target = APERTURE_STOPS[i];
+            break;
+          }
+        }
+        state.aperture = target;
+        if (dom.apertureSlider) dom.apertureSlider.value = target;
+        updateApertureButtonsState();
+        update();
+      });
+    }
+
+    if (dom.btnAperturePlus) {
+      dom.btnAperturePlus.addEventListener('click', () => {
+        const current = state.aperture;
+        let target = APERTURE_STOPS[APERTURE_STOPS.length - 1];
+        for (let i = 0; i < APERTURE_STOPS.length; i++) {
+          if (APERTURE_STOPS[i] > current + 0.05) {
+            target = APERTURE_STOPS[i];
+            break;
+          }
+        }
+        state.aperture = target;
+        if (dom.apertureSlider) dom.apertureSlider.value = target;
         updateApertureButtonsState();
         update();
       });
@@ -450,9 +503,6 @@
   }
 
   function syncDistanceInputs(syncSlider = true) {
-    if (dom.distanceInput) {
-      dom.distanceInput.value = state.distance;
-    }
     if (syncSlider && dom.distanceSlider) {
       dom.distanceSlider.value = distanceToSlider(state.distance);
     }
@@ -464,7 +514,6 @@
   function syncControls() {
     if (dom.sensorSelect) dom.sensorSelect.value = state.sensor;
     if (dom.focalSlider) dom.focalSlider.value = state.focalLength;
-    if (dom.focalInput) dom.focalInput.value = state.focalLength;
     if (dom.apertureSlider) dom.apertureSlider.value = state.aperture;
     syncDistanceInputs();
     updateApertureButtonsState();
@@ -502,6 +551,9 @@
     }
     if (dom.apertureDisplay) {
       dom.apertureDisplay.textContent = `f/${result.aperture.toFixed(1).replace('.0', '')}`;
+    }
+    if (dom.irisPupilSummary) {
+      dom.irisPupilSummary.textContent = `Pupil: ${result.pupilDiameterMm.toFixed(1).replace('.', ',')} mm`;
     }
     if (dom.distanceDisplay) {
       dom.distanceDisplay.textContent = DofEngine.formatDistance(result.distanceM);

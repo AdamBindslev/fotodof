@@ -15,7 +15,7 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="styles.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
 
@@ -108,30 +108,120 @@
       </div>
     </section>
 
-    <!-- NØGLETAL SUMMARY CARD (Glanceable Layer 1) -->
-    <section class="summary-hero-card">
-      <div class="summary-primary-box">
-        <span class="summary-label">TOTAL DYBDESKARPHED (DOF)</span>
-        <div class="summary-huge-val" id="totalDofValue">25,4 cm</div>
-        <span class="summary-sub">Acceptabelt skarpt område foran og bag motivet</span>
+    <!-- KOMPAKT EVF KONTROLPANEL (Lige under presets, intet scroll nødvendigt!) -->
+    <section class="compact-controls-panel" id="compactControlsPanel">
+      <div class="panel-header-row">
+        <span class="section-label">Indstillinger</span>
+        <span class="ctrl-header-sub">Kompakt EVF kontrolpanel</span>
       </div>
 
-      <div class="summary-metrics-grid">
-        <div class="metric-cell">
-          <span class="metric-cell-label">NÆRGRÆNSE (Dn)</span>
-          <span class="metric-cell-val" id="nearLimitValue">1,88 m</span>
-          <span class="metric-cell-sub">Skarpheden starter</span>
+      <div class="compact-controls-card">
+
+        <!-- RÆKKE 1: SENSOR -->
+        <div class="compact-ctrl-row row-sensor">
+          <div class="ctrl-row-header">
+            <span class="ctrl-tag">SENSOR</span>
+            <div class="select-inline-wrap">
+              <select id="sensorSelect" class="form-select-compact" aria-label="Vælg sensorstørrelse">
+                <option value="medium_format">Mellemformat 44×33mm (0.79×)</option>
+                <option value="full_frame" selected>Full Frame / 35mm (1.0× [FX])</option>
+                <option value="apsc_sony_nikon_fuji">APS-C 1.5× (Sony, Nikon, Fuji)</option>
+                <option value="apsc_canon">APS-C Canon 1.6× (Canon EOS R/D)</option>
+                <option value="mft">Micro Four Thirds [2.0×]</option>
+                <option value="one_inch">1" Tomme (2.7×)</option>
+                <option value="phone_main">Smartphone Stor Sensor (1/1.3")</option>
+                <option value="phone_small">Smartphone Standard (1/2.5")</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="metric-cell">
-          <span class="metric-cell-label">FJERNESTE (Df)</span>
-          <span class="metric-cell-val" id="farLimitValue">2,14 m</span>
-          <span class="metric-cell-sub">Skarpheden slutter</span>
+
+        <!-- RÆKKE 2: BRÆNDVIDDE -->
+        <div class="compact-ctrl-row">
+          <div class="ctrl-row-header">
+            <div class="ctrl-title-wrap">
+              <span class="ctrl-tag">BRÆNDVIDDE</span>
+              <span class="ctrl-equiv-sub" id="focalEquiv">50 mm ækv.</span>
+            </div>
+            <div class="ctrl-val-display" id="focalDisplay">50 mm</div>
+          </div>
+
+          <div class="ctrl-slider-stepper-wrap">
+            <button type="button" class="btn-micro-step" id="btnFocalMinus" title="Mindre brændvidde">−</button>
+            <input type="range" id="focalSlider" class="form-range" min="10" max="600" step="1" value="50" aria-label="Brændvidde skyder">
+            <button type="button" class="btn-micro-step" id="btnFocalPlus" title="Større brændvidde">+</button>
+          </div>
+
+          <div class="ctrl-pills-strip">
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="16">16</button>
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="24">24</button>
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="35">35</button>
+            <button type="button" class="ctrl-pill focal-quick-btn active" data-focal="50">50</button>
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="85">85</button>
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="105">105</button>
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="135">135</button>
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="200">200</button>
+            <button type="button" class="ctrl-pill focal-quick-btn" data-focal="400">400</button>
+          </div>
         </div>
-        <div class="metric-cell highlight-cell">
-          <span class="metric-cell-label">HYPERFOKAL (H)</span>
-          <span class="metric-cell-val" id="hyperfocalValue">30,8 m</span>
-          <span class="metric-cell-sub">Fokus for skarp uendelighed</span>
+
+        <!-- RÆKKE 3: BLÆNDE -->
+        <div class="compact-ctrl-row">
+          <div class="ctrl-row-header">
+            <div class="ctrl-title-wrap">
+              <span class="ctrl-tag">BLÆNDE</span>
+              <span class="ctrl-equiv-sub" id="irisPupilSummary">Pupil: 17,9 mm</span>
+            </div>
+            <div class="ctrl-val-display" id="apertureDisplay">f/2.8</div>
+          </div>
+
+          <div class="ctrl-slider-stepper-wrap">
+            <button type="button" class="btn-micro-step" id="btnApertureMinus" title="Større blændeåbning (lavere f-tal)">−</button>
+            <input type="range" id="apertureSlider" class="form-range" min="1.0" max="32.0" step="0.1" value="2.8" aria-label="Blænde skyder">
+            <button type="button" class="btn-micro-step" id="btnAperturePlus" title="Mindre blændeåbning (højere f-tal)">+</button>
+          </div>
+
+          <div class="ctrl-pills-strip">
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="1.4">f/1.4</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="1.8">f/1.8</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="2.0">f/2</button>
+            <button type="button" class="ctrl-pill f-stop-btn active" data-aperture="2.8">f/2.8</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="4.0">f/4</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="5.6">f/5.6</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="8.0">f/8</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="11.0">f/11</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="16.0">f/16</button>
+            <button type="button" class="ctrl-pill f-stop-btn" data-aperture="22.0">f/22</button>
+          </div>
         </div>
+
+        <!-- RÆKKE 4: AFSTAND -->
+        <div class="compact-ctrl-row">
+          <div class="ctrl-row-header">
+            <div class="ctrl-title-wrap">
+              <span class="ctrl-tag">MOTIVAFSTAND</span>
+            </div>
+            <div class="ctrl-val-display" id="distanceDisplay">2,00 m</div>
+          </div>
+
+          <div class="ctrl-slider-stepper-wrap">
+            <button type="button" class="btn-micro-step" id="btnDistMinus" title="Mindre afstand">−</button>
+            <input type="range" id="distanceSlider" class="form-range" min="0" max="1000" step="1" value="480" aria-label="Afstand skyder">
+            <button type="button" class="btn-micro-step" id="btnDistPlus" title="Større afstand">+</button>
+          </div>
+
+          <div class="ctrl-pills-strip">
+            <button type="button" class="ctrl-pill dist-quick-btn" data-dist="0.35">0,35m</button>
+            <button type="button" class="ctrl-pill dist-quick-btn" data-dist="0.5">0,5m</button>
+            <button type="button" class="ctrl-pill dist-quick-btn" data-dist="1.0">1m</button>
+            <button type="button" class="ctrl-pill dist-quick-btn active" data-dist="2.0">2m</button>
+            <button type="button" class="ctrl-pill dist-quick-btn" data-dist="3.0">3m</button>
+            <button type="button" class="ctrl-pill dist-quick-btn" data-dist="5.0">5m</button>
+            <button type="button" class="ctrl-pill dist-quick-btn" data-dist="10.0">10m</button>
+            <button type="button" class="ctrl-pill pill-hyper dist-quick-btn" id="btnSetHyperfocal" data-dist="hyperfocal" title="Sæt direkte til hyperfokaldistance">⚡ Hyper</button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -159,13 +249,13 @@
           </button>
         </div>
 
-        <div class="vis-hint">Træk på målestokken for at ændre afstand</div>
+        <div class="vis-hint">Realtids optisk visualisering</div>
       </div>
 
-      <!-- VISUALISERING 1: OPTISK MÅLESTOK DIAGRAM (SVG) -->
+      <!-- VISUALISERING 1: OPTISK MÅLESTOK DIAGRAM (SVG - ren visning) -->
       <div class="vis-card" id="visDiagramCard">
         <div class="svg-diagram-wrapper">
-          <svg id="dofSvgDiagram" viewBox="0 0 1000 240" preserveAspectRatio="xMidYMid meet" aria-label="Optisk DOF Diagram"></svg>
+          <svg id="dofSvgDiagram" viewBox="0 0 1000 165" preserveAspectRatio="xMidYMid meet" aria-label="Optisk DOF Diagram"></svg>
         </div>
         <div class="diagram-legend">
           <div class="legend-item"><span class="legend-dot dot-red"></span><span>Forgrund (sløret)</span></div>
@@ -192,9 +282,7 @@
           <div class="evf-layer evf-subject-wrap" id="evfLayerSubject">
             <div class="evf-subject-figure">
               <svg viewBox="0 0 120 180" width="120" height="180" fill="none">
-                <!-- Rådyr / Fotograf silhuet -->
                 <path d="M 60 40 C 65 30, 75 25, 78 15 C 80 10, 85 8, 88 12 C 90 15, 87 22, 82 28 C 88 28, 95 32, 94 38 C 92 45, 85 48, 80 50 L 85 85 L 95 140 L 88 142 L 78 95 L 62 95 L 52 142 L 45 140 L 52 82 C 45 78, 38 70, 38 60 C 38 48, 48 42, 60 40 Z" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2"/>
-                <!-- Skarpt øje markering -->
                 <circle cx="82" cy="22" r="2.5" fill="#10b981"/>
               </svg>
             </div>
@@ -210,7 +298,7 @@
             </div>
           </div>
 
-          <!-- Lag 3: Nær forgrund (slørede strå og blade) -->
+          <!-- Lag 3: Nær forgrund -->
           <div class="evf-layer evf-foreground-wrap" id="evfLayerForeground">
             <svg viewBox="0 0 400 120" width="100%" height="120" preserveAspectRatio="none" fill="#090d16">
               <path d="M 0 120 L 0 50 Q 20 20 40 70 Q 70 10 90 85 Q 120 30 150 90 Q 200 15 230 100 Q 280 40 310 95 Q 350 10 380 75 L 400 60 L 400 120 Z"/>
@@ -228,7 +316,7 @@
             <div class="grid-line grid-h2"></div>
           </div>
 
-          <!-- EVF HUD Telemetry Overlay (Lukkertid, Blænde, ISO, m) -->
+          <!-- EVF HUD Telemetry Overlay -->
           <div class="evf-hud-top">
             <div class="hud-item hud-badge">RAW • FX</div>
             <div class="hud-item hud-bokeh" id="evfBokehQualityLabel">Klassisk Bokeh</div>
@@ -246,203 +334,32 @@
       </div>
     </section>
 
-    <!-- FOTOGRAFISKE KONTROLLER: SENSOR, BRÆNDVIDDE, BLÆNDE, AFSTAND -->
-    <main class="controls-grid">
+    <!-- NØGLETAL SUMMARY CARD (Glanceable Layer 1) -->
+    <section class="summary-hero-card">
+      <div class="summary-primary-box">
+        <span class="summary-label">TOTAL DYBDESKARPHED (DOF)</span>
+        <div class="summary-huge-val" id="totalDofValue">25,4 cm</div>
+        <span class="summary-sub">Acceptabelt skarpt område foran og bag motivet</span>
+      </div>
 
-      <!-- KORT 1: SENSORSTØRRELSE -->
-      <article class="photo-card card-sensor">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon-svg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="3" width="20" height="18" rx="2"></rect>
-                <circle cx="12" cy="12" r="5"></circle>
-                <circle cx="12" cy="12" r="1"></circle>
-              </svg>
-            </div>
-            <div>
-              <h3>Sensorstørrelse</h3>
-              <span class="card-subtitle">Kameraets fysiske sensor & crop-faktor</span>
-            </div>
-          </div>
+      <div class="summary-metrics-grid">
+        <div class="metric-cell">
+          <span class="metric-cell-label">NÆRGRÆNSE (Dn)</span>
+          <span class="metric-cell-val" id="nearLimitValue">1,88 m</span>
+          <span class="metric-cell-sub">Skarpheden starter</span>
         </div>
-
-        <div class="card-body">
-          <div class="select-wrapper">
-            <select id="sensorSelect" class="form-select" aria-label="Vælg sensorstørrelse">
-              <option value="medium_format">Mellemformat (Fuji GFX / Hasselblad • 44×33mm • 0.79×)</option>
-              <option value="full_frame" selected>Full Frame / 35mm (Sony, Canon, Nikon • 36×24mm • 1.0×)</option>
-              <option value="apsc_sony_nikon_fuji">APS-C 1.5× (Fujifilm, Sony E, Nikon DX • 23.5×15.6mm)</option>
-              <option value="apsc_canon">APS-C Canon 1.6× (Canon EOS R7/R10 • 22.2×14.8mm)</option>
-              <option value="mft">Micro Four Thirds (OM System, Lumix G • 2.0×)</option>
-              <option value="one_inch">1" Tomme (Sony RX100, ZV-1 • 2.7×)</option>
-              <option value="phone_main">Smartphone Stor Sensor (iPhone Pro, S24U • 1/1.3" • 3.6×)</option>
-              <option value="phone_small">Smartphone Standard (1/2.55" • 6.0×)</option>
-            </select>
-          </div>
-          <div class="helper-info-text" id="sensorCocInfo">
-            Spredningscirkel (Circle of Confusion CoC) bestemmer grænsen for, hvornår et punkt opfattes som skarpt på sensoren.
-          </div>
+        <div class="metric-cell">
+          <span class="metric-cell-label">FJERNESTE (Df)</span>
+          <span class="metric-cell-val" id="farLimitValue">2,14 m</span>
+          <span class="metric-cell-sub">Skarpheden slutter</span>
         </div>
-      </article>
-
-      <!-- KORT 2: BRÆNDVIDDE (FOCAL LENGTH) -->
-      <article class="photo-card card-focal">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon-svg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="9"></circle>
-                <line x1="12" y1="3" x2="12" y2="7"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-            </div>
-            <div>
-              <h3>Brændvidde (mm)</h3>
-              <span class="card-subtitle">Objektivets optiske brændvidde</span>
-            </div>
-          </div>
-          <div class="control-live-val" id="focalDisplay">50 mm</div>
+        <div class="metric-cell highlight-cell">
+          <span class="metric-cell-label">HYPERFOKAL (H)</span>
+          <span class="metric-cell-val" id="hyperfocalValue">30,8 m</span>
+          <span class="metric-cell-sub">Fokus for skarp uendelighed</span>
         </div>
-
-        <div class="card-body">
-          <!-- Hurtigknapper for klassiske brændvidder -->
-          <div class="quick-btn-row">
-            <button type="button" class="focal-quick-btn" data-focal="16">16mm</button>
-            <button type="button" class="focal-quick-btn" data-focal="24">24mm</button>
-            <button type="button" class="focal-quick-btn" data-focal="35">35mm</button>
-            <button type="button" class="focal-quick-btn active" data-focal="50">50mm</button>
-            <button type="button" class="focal-quick-btn" data-focal="85">85mm</button>
-            <button type="button" class="focal-quick-btn" data-focal="105">105mm</button>
-            <button type="button" class="focal-quick-btn" data-focal="135">135mm</button>
-            <button type="button" class="focal-quick-btn" data-focal="200">200mm</button>
-            <button type="button" class="focal-quick-btn" data-focal="400">400mm</button>
-          </div>
-
-          <!-- Slider & direkte numerisk input -->
-          <div class="slider-input-group">
-            <input type="range" id="focalSlider" class="form-range" min="10" max="600" step="1" value="50" aria-label="Brændvidde skyder">
-            <div class="num-input-wrap">
-              <input type="number" id="focalInput" class="form-num" min="8" max="800" value="50" aria-label="Brændvidde mm">
-              <span class="num-unit">mm</span>
-            </div>
-          </div>
-
-          <div class="equiv-badge-row">
-            <span class="equiv-pill" id="focalEquiv">50 mm (35mm ækv.)</span>
-            <span class="equiv-sub">FOV synsvinkel på den valgte sensor</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- KORT 3: BLÆNDE (APERTURE / F-STOP) -->
-      <article class="photo-card card-aperture">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon-svg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polygon points="12,5 17,9 17,15 12,19 7,15 7,9"></polygon>
-              </svg>
-            </div>
-            <div>
-              <h3>Blænde (f-tal)</h3>
-              <span class="card-subtitle">Objektivets blændeåbning</span>
-            </div>
-          </div>
-          <div class="control-live-val" id="apertureDisplay">f/2.8</div>
-        </div>
-
-        <div class="card-body">
-          <!-- Standard f-stop knapper -->
-          <div class="f-stop-grid">
-            <button type="button" class="f-stop-btn" data-aperture="1.2">f/1.2</button>
-            <button type="button" class="f-stop-btn" data-aperture="1.4">f/1.4</button>
-            <button type="button" class="f-stop-btn" data-aperture="1.8">f/1.8</button>
-            <button type="button" class="f-stop-btn" data-aperture="2.0">f/2</button>
-            <button type="button" class="f-stop-btn active" data-aperture="2.8">f/2.8</button>
-            <button type="button" class="f-stop-btn" data-aperture="4.0">f/4</button>
-            <button type="button" class="f-stop-btn" data-aperture="5.6">f/5.6</button>
-            <button type="button" class="f-stop-btn" data-aperture="8.0">f/8</button>
-            <button type="button" class="f-stop-btn" data-aperture="11.0">f/11</button>
-            <button type="button" class="f-stop-btn" data-aperture="16.0">f/16</button>
-            <button type="button" class="f-stop-btn" data-aperture="22.0">f/22</button>
-          </div>
-
-          <!-- Slider for finjustering -->
-          <div class="slider-input-group">
-            <input type="range" id="apertureSlider" class="form-range" min="1.0" max="32.0" step="0.1" value="2.8" aria-label="Blænde skyder">
-          </div>
-
-          <!-- Fysisk Iris & Indgangspupil visualisering -->
-          <div class="iris-row">
-            <div class="iris-svg-wrap">
-              <svg id="apertureIrisSvg" viewBox="0 0 110 110" width="55" height="55"></svg>
-            </div>
-            <div class="iris-desc">
-              <div class="iris-label">Fysisk indgangspupil: <strong id="aperturePupilDiameter">17,9 mm</strong></div>
-              <div class="iris-sub">Større fysisk åbning = kraftigere optisk baggrundssløring</div>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- KORT 4: AFSTAND TIL MOTIV (DISTANCE) -->
-      <article class="photo-card card-distance">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon-svg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="12" r="3"></circle>
-                <line x1="9" y1="12" x2="15" y2="12"></line>
-              </svg>
-            </div>
-            <div>
-              <h3>Afstand til motiv</h3>
-              <span class="card-subtitle">Fokusafstand fra kameraets sensor</span>
-            </div>
-          </div>
-          <div class="control-live-val" id="distanceDisplay">2,00 m</div>
-        </div>
-
-        <div class="card-body">
-          <!-- Hurtigknapper for afstande -->
-          <div class="quick-btn-row">
-            <button type="button" class="dist-quick-btn" data-dist="0.35">0,35m</button>
-            <button type="button" class="dist-quick-btn" data-dist="0.5">0,5m</button>
-            <button type="button" class="dist-quick-btn" data-dist="1.0">1,0m</button>
-            <button type="button" class="dist-quick-btn active" data-dist="2.0">2,0m</button>
-            <button type="button" class="dist-quick-btn" data-dist="3.0">3,0m</button>
-            <button type="button" class="dist-quick-btn" data-dist="5.0">5,0m</button>
-            <button type="button" class="dist-quick-btn" data-dist="10.0">10m</button>
-            <button type="button" class="dist-quick-btn btn-hyper-chip" data-dist="hyperfocal" title="Sæt afstanden direkte til hyperfokal afstand">⚡ Hyperfokal</button>
-          </div>
-
-          <!-- Slider med finjusteringsknapper - / + -->
-          <div class="distance-control-wrap">
-            <button type="button" class="btn-step" id="btnDistMinus" title="Mindre afstand">−</button>
-            <input type="range" id="distanceSlider" class="form-range" min="0" max="1000" step="1" value="480" aria-label="Afstand skyder">
-            <button type="button" class="btn-step" id="btnDistPlus" title="Større afstand">+</button>
-            <div class="num-input-wrap dist-num-wrap">
-              <input type="number" id="distanceInput" class="form-num" min="0.1" max="500" step="0.05" value="2.00" aria-label="Afstand meter">
-              <span class="num-unit">m</span>
-            </div>
-          </div>
-
-          <!-- Hyperfokal knap med ét tryk -->
-          <div class="hyper-action-row">
-            <button type="button" id="btnSetHyperfocal" class="btn-hyper-action">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-              </svg>
-              <span>Fokuser på Hyperfokaldistance for maksimal skarphed</span>
-            </button>
-          </div>
-        </div>
-      </article>
-
-    </main>
+      </div>
+    </section>
 
     <!-- DYBDEGÅENDE OPTISKE DATA (Fold-ud / To-lags arkitektur som Fotovejr) -->
     <section class="deep-data-section">
@@ -494,12 +411,12 @@
         <article class="deep-card half-card">
           <span class="deep-card-name">Forstørrelsesgrad (m)</span>
           <div class="deep-huge-metric" id="magnificationVal">1:39.0</div>
-          <span class="deep-card-desc">Forhold mellem motivstørrelse og sensoraftryk</span>
+          <span class="deep-card-desc">Forhold mellem motiv og sensor</span>
         </article>
         <article class="deep-card half-card">
           <span class="deep-card-name">35mm DOF Ækvivalent</span>
           <div class="deep-huge-metric" id="equiv35Val">50mm f/2.8</div>
-          <span class="deep-card-desc">Svarer til denne brændvidde/blænde på Full Frame</span>
+          <span class="deep-card-desc">Svarer til denne kombination på Full Frame</span>
         </article>
       </div>
 
@@ -553,8 +470,8 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="dof-engine.js?v=1"></script>
-  <script src="dof-visualizer.js?v=1"></script>
-  <script src="app.js?v=1"></script>
+  <script src="dof-engine.js?v=2"></script>
+  <script src="dof-visualizer.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

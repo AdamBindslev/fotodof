@@ -27,61 +27,6 @@
       this.gridEnabled = true;
 
       this.currentData = null;
-      this.initEvents();
-    }
-
-    initEvents() {
-      // Touch/drag på diagrammet for direkte afstandsregulering
-      if (this.svgDiagram) {
-        let isDragging = false;
-
-        const handlePointer = (e) => {
-          if (!this.currentData || !this.onDistanceChangeCallback) return;
-          const rect = this.svgDiagram.getBoundingClientRect();
-          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-          const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-          const normalizedX = x / rect.width;
-
-          // Konverter skærm-x tilbage til afstand via den adaptive skala
-          const dist = this.xToDistance(normalizedX);
-          if (dist > 0) {
-            this.onDistanceChangeCallback(dist);
-          }
-        };
-
-        this.svgDiagram.addEventListener('mousedown', (e) => {
-          isDragging = true;
-          handlePointer(e);
-        });
-
-        window.addEventListener('mousemove', (e) => {
-          if (isDragging) handlePointer(e);
-        });
-
-        window.addEventListener('mouseup', () => {
-          isDragging = false;
-        });
-
-        this.svgDiagram.addEventListener('touchstart', (e) => {
-          isDragging = true;
-          handlePointer(e);
-        }, { passive: true });
-
-        window.addEventListener('touchmove', (e) => {
-          if (isDragging) handlePointer(e);
-        }, { passive: true });
-
-        window.addEventListener('touchend', () => {
-          isDragging = false;
-        });
-      }
-    }
-
-    /**
-     * Sæt callback til afstandsændring ved træk i diagrammet
-     */
-    onDistanceChange(callback) {
-      this.onDistanceChangeCallback = callback;
     }
 
     /**
@@ -113,7 +58,6 @@
      */
     getDisplayMaxDistance(s, H, Df) {
       if (Df === Infinity || Df > 100) {
-        // Hvis uendelig, baser skalaen på H eller s
         return Math.max(s * 2.2, Math.min(H * 1.4, 60));
       }
       return Math.max(Df * 1.35, s * 1.5, 1.0);
@@ -121,18 +65,9 @@
 
     distanceToX(dist, maxDist) {
       if (dist <= 0) return 0.08;
-      // Dæmpet kvadratrodsskala for fantastisk balance mellem makro & tele
       const norm = Math.min(1.0, dist / maxDist);
       const curved = Math.pow(norm, 0.72);
-      // Kortlæg fra 10% (kamera) til 95% (højre kant)
       return 0.10 + (curved * 0.85);
-    }
-
-    xToDistance(normalizedX) {
-      const maxDist = this.lastMaxDist || 10;
-      const t = Math.max(0, Math.min(1, (normalizedX - 0.10) / 0.85));
-      const dist = Math.pow(t, 1 / 0.72) * maxDist;
-      return Math.max(0.1, dist);
     }
 
     /**
@@ -146,7 +81,7 @@
     }
 
     /**
-     * Tegner det top-down optiske diagram i SVG
+     * Tegner det top-down optiske diagram i SVG (ren visualisering, optimeret højde 165px)
      */
     renderOpticalDiagram(data) {
       if (!this.svgDiagram) return;
@@ -159,22 +94,22 @@
         nearLimitM,
         farLimitM,
         totalDofM,
-        isInfinity,
-        sensor
+        isInfinity
       } = data;
 
       const maxDist = this.getDisplayMaxDistance(distanceM, hyperfocalM, farLimitM);
       this.lastMaxDist = maxDist;
 
       const width = 1000;
-      const height = 240;
-      const centerY = 115;
+      const height = 165;
+      const centerY = 72;
+      const baselineY = 125;
 
-      const cameraX = 80;
+      const cameraX = 75;
       const subjX = this.distanceToX(distanceM, maxDist) * width;
       const nearX = Math.max(cameraX + 8, this.distanceToX(nearLimitM, maxDist) * width);
       const isFarInfinite = (farLimitM === Infinity || farLimitM > maxDist);
-      const farX = isFarInfinite ? (width - 25) : (this.distanceToX(farLimitM, maxDist) * width);
+      const farX = isFarInfinite ? (width - 20) : (this.distanceToX(farLimitM, maxDist) * width);
       const hyperX = (hyperfocalM <= maxDist) ? (this.distanceToX(hyperfocalM, maxDist) * width) : null;
 
       // Generer målestoks-ticks
@@ -183,127 +118,118 @@
       ticks.forEach(t => {
         const tx = this.distanceToX(t.val, maxDist) * width;
         ticksSvg += `
-          <line x1="${tx}" y1="180" x2="${tx}" y2="192" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" />
-          <text x="${tx}" y="208" font-size="11" font-family="ui-monospace, monospace" fill="#94a3b8" text-anchor="middle">${t.label}</text>
+          <line x1="${tx}" y1="${baselineY}" x2="${tx}" y2="${baselineY + 7}" stroke="rgba(255,255,255,0.25)" stroke-width="1.2" />
+          <text x="${tx}" y="${baselineY + 20}" font-size="10.5" font-family="ui-monospace, monospace" fill="#94a3b8" text-anchor="middle">${t.label}</text>
         `;
       });
 
-      // Lysstråle kegle (Field of view ray cone)
-      const beamHalfHeight = 75;
+      // Lysstråle kegle
+      const beamHalfHeight = 46;
       const raysSvg = `
-        <polygon points="${cameraX},${centerY} ${width - 20},${centerY - beamHalfHeight} ${width - 20},${centerY + beamHalfHeight}" fill="url(#rayGrad)" opacity="0.45" />
-        <line x1="${cameraX}" y1="${centerY}" x2="${width - 20}" y2="${centerY - beamHalfHeight}" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" stroke-dasharray="3 3"/>
-        <line x1="${cameraX}" y1="${centerY}" x2="${width - 20}" y2="${centerY + beamHalfHeight}" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" stroke-dasharray="3 3"/>
-        <!-- Optisk optisk centerlinie -->
-        <line x1="${cameraX}" y1="${centerY}" x2="${width - 15}" y2="${centerY}" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="2 4"/>
+        <polygon points="${cameraX},${centerY} ${width - 15},${centerY - beamHalfHeight} ${width - 15},${centerY + beamHalfHeight}" fill="url(#rayGrad)" opacity="0.4" />
+        <line x1="${cameraX}" y1="${centerY}" x2="${width - 15}" y2="${centerY - beamHalfHeight}" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="${cameraX}" y1="${centerY}" x2="${width - 15}" y2="${centerY + beamHalfHeight}" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="${cameraX}" y1="${centerY}" x2="${width - 10}" y2="${centerY}" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="2 4"/>
       `;
 
-      // DOF Focus Zone (Det skarpe område)
+      // DOF Focus Zone
       const dofWidth = Math.max(3, farX - nearX);
       const dofZoneSvg = `
         <defs>
           <linearGradient id="dofZoneGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
-            <stop offset="50%" stop-color="#10b981" stop-opacity="0.45"/>
+            <stop offset="50%" stop-color="#10b981" stop-opacity="0.5"/>
             <stop offset="100%" stop-color="${isFarInfinite ? '#38bdf8' : '#10b981'}" stop-opacity="${isFarInfinite ? '0.2' : '0.25'}"/>
           </linearGradient>
           <linearGradient id="rayGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.04"/>
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22"/>
+            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.03"/>
           </linearGradient>
         </defs>
 
         <!-- Uskarp forgrund skygge -->
-        <rect x="${cameraX + 5}" y="35" width="${Math.max(0, nearX - cameraX - 5)}" height="135" fill="rgba(239, 68, 68, 0.06)" />
+        <rect x="${cameraX + 5}" y="24" width="${Math.max(0, nearX - cameraX - 5)}" height="100" fill="rgba(239, 68, 68, 0.05)" />
 
         <!-- Skarp DOF bælte -->
-        <rect x="${nearX}" y="35" width="${dofWidth}" height="135" fill="url(#dofZoneGrad)" rx="3"/>
-        <line x1="${nearX}" y1="35" x2="${nearX}" y2="170" stroke="#10b981" stroke-width="2.5" />
-        <line x1="${farX}" y1="35" x2="${farX}" y2="170" stroke="${isFarInfinite ? '#38bdf8' : '#10b981'}" stroke-width="2.5" ${isFarInfinite ? 'stroke-dasharray="5 4"' : ''}/>
+        <rect x="${nearX}" y="24" width="${dofWidth}" height="100" fill="url(#dofZoneGrad)" rx="3"/>
+        <line x1="${nearX}" y1="24" x2="${nearX}" y2="${baselineY}" stroke="#10b981" stroke-width="2.2" />
+        <line x1="${farX}" y1="24" x2="${farX}" y2="${baselineY}" stroke="${isFarInfinite ? '#38bdf8' : '#10b981'}" stroke-width="2.2" ${isFarInfinite ? 'stroke-dasharray="5 3"' : ''}/>
 
         ${isFarInfinite ? `
-          <!-- Pil mod uendelig -->
-          <polygon points="${width - 25},${centerY - 8} ${width - 12},${centerY} ${width - 25},${centerY + 8}" fill="#38bdf8" opacity="0.8"/>
+          <polygon points="${width - 20},${centerY - 6} ${width - 8},${centerY} ${width - 20},${centerY + 6}" fill="#38bdf8" opacity="0.85"/>
         ` : ''}
       `;
 
-      // Tekst og etiketter på diagram
-      const dofLabelText = isInfinity ? 'DOF: ∞ (Uendelig)' : `DOF: ${DofEngine.formatDistance(totalDofM)}`;
+      const dofLabelText = isInfinity ? 'DOF: ∞' : `DOF: ${DofEngine.formatDistance(totalDofM)}`;
       const dofMidX = nearX + (dofWidth / 2);
 
       const labelsSvg = `
         <!-- Nærgrænse label -->
-        <g transform="translate(${nearX}, 28)">
-          <rect x="-35" y="-18" width="70" height="20" rx="4" fill="#0f172a" stroke="#10b981" stroke-width="1.2" opacity="0.95"/>
-          <text x="0" y="-4" font-size="10" font-weight="700" font-family="ui-monospace, monospace" fill="#10b981" text-anchor="middle">
+        <g transform="translate(${nearX}, 20)">
+          <rect x="-30" y="-15" width="60" height="17" rx="3" fill="#0f172a" stroke="#10b981" stroke-width="1.1" opacity="0.95"/>
+          <text x="0" y="-3" font-size="9" font-weight="700" font-family="ui-monospace, monospace" fill="#10b981" text-anchor="middle">
             Dn: ${DofEngine.formatDistance(nearLimitM)}
           </text>
         </g>
 
         <!-- Motiv markør og label -->
         <g transform="translate(${subjX}, ${centerY})">
-          <!-- Lodret motivlinie -->
-          <line x1="0" y1="-80" x2="0" y2="60" stroke="#f59e0b" stroke-width="2.2" stroke-dasharray="4 2"/>
-          <!-- Motiv ikon / trådkors -->
-          <circle cx="0" cy="0" r="14" fill="#1e293b" stroke="#f59e0b" stroke-width="2.5"/>
-          <circle cx="0" cy="0" r="4" fill="#f59e0b"/>
-          <line x1="-18" y1="0" x2="18" y2="0" stroke="#f59e0b" stroke-width="1.5"/>
-          <line x1="0" y1="-18" x2="0" y2="18" stroke="#f59e0b" stroke-width="1.5"/>
+          <line x1="0" y1="-50" x2="0" y2="52" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3 2"/>
+          <circle cx="0" cy="0" r="11" fill="#1e293b" stroke="#f59e0b" stroke-width="2.2"/>
+          <circle cx="0" cy="0" r="3.5" fill="#f59e0b"/>
+          <line x1="-14" y1="0" x2="14" y2="0" stroke="#f59e0b" stroke-width="1.2"/>
+          <line x1="0" y1="-14" x2="0" y2="14" stroke="#f59e0b" stroke-width="1.2"/>
           
-          <!-- Motiv afstandsbadge -->
-          <rect x="-42" y="-105" width="84" height="22" rx="5" fill="#f59e0b" />
-          <text x="0" y="-90" font-size="11" font-weight="800" font-family="-apple-system, sans-serif" fill="#07080a" text-anchor="middle">
-            MOTIV ${DofEngine.formatDistance(distanceM)}
+          <rect x="-36" y="-68" width="72" height="18" rx="4" fill="#f59e0b" />
+          <text x="0" y="-55" font-size="9.5" font-weight="800" font-family="-apple-system, sans-serif" fill="#07080a" text-anchor="middle">
+            ${DofEngine.formatDistance(distanceM)}
           </text>
         </g>
 
         <!-- Fjerneste grænse label -->
-        <g transform="translate(${farX}, 28)">
-          <rect x="-36" y="-18" width="72" height="20" rx="4" fill="#0f172a" stroke="${isFarInfinite ? '#38bdf8' : '#10b981'}" stroke-width="1.2" opacity="0.95"/>
-          <text x="0" y="-4" font-size="10" font-weight="700" font-family="ui-monospace, monospace" fill="${isFarInfinite ? '#38bdf8' : '#10b981'}" text-anchor="middle">
+        <g transform="translate(${farX}, 20)">
+          <rect x="-30" y="-15" width="60" height="17" rx="3" fill="#0f172a" stroke="${isFarInfinite ? '#38bdf8' : '#10b981'}" stroke-width="1.1" opacity="0.95"/>
+          <text x="0" y="-3" font-size="9" font-weight="700" font-family="ui-monospace, monospace" fill="${isFarInfinite ? '#38bdf8' : '#10b981'}" text-anchor="middle">
             Df: ${isFarInfinite ? '∞' : DofEngine.formatDistance(farLimitM)}
           </text>
         </g>
 
-        <!-- DOF bredde badge i toppen af zonen -->
-        ${dofWidth > 55 ? `
-          <g transform="translate(${dofMidX}, 65)">
-            <rect x="-50" y="-12" width="100" height="22" rx="11" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="1.2"/>
-            <text x="0" y="3" font-size="11" font-weight="800" font-family="-apple-system, sans-serif" fill="#10b981" text-anchor="middle">${dofLabelText}</text>
+        <!-- DOF bredde badge -->
+        ${dofWidth > 60 ? `
+          <g transform="translate(${dofMidX}, 48)">
+            <rect x="-42" y="-10" width="84" height="19" rx="9" fill="rgba(16, 185, 129, 0.22)" stroke="#10b981" stroke-width="1.1"/>
+            <text x="0" y="3" font-size="10" font-weight="800" font-family="-apple-system, sans-serif" fill="#10b981" text-anchor="middle">${dofLabelText}</text>
           </g>
         ` : ''}
 
         <!-- Hyperfokal indikator -->
         ${hyperX ? `
-          <g transform="translate(${hyperX}, 168)">
-            <polygon points="0,0 -5,8 5,8" fill="#38bdf8"/>
-            <text x="0" y="20" font-size="9" font-family="ui-monospace, monospace" fill="#38bdf8" text-anchor="middle" font-weight="700">H: ${DofEngine.formatDistance(hyperfocalM)}</text>
+          <g transform="translate(${hyperX}, ${baselineY - 2})">
+            <polygon points="0,0 -4,7 4,7" fill="#38bdf8"/>
+            <text x="0" y="16" font-size="8" font-family="ui-monospace, monospace" fill="#38bdf8" text-anchor="middle" font-weight="700">H: ${DofEngine.formatDistance(hyperfocalM)}</text>
           </g>
         ` : ''}
       `;
 
       // Kamera ikon
       const cameraSvg = `
-        <g transform="translate(18, ${centerY - 32})">
-          <!-- Hus -->
-          <rect x="0" y="10" width="48" height="44" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1.8"/>
-          <rect x="14" y="3" width="20" height="8" rx="2" fill="#334155"/>
-          <circle cx="24" cy="32" r="14" fill="#0f172a" stroke="#64748b" stroke-width="1.5"/>
-          <!-- Objektivstuds -->
-          <rect x="46" y="20" width="16" height="24" rx="2" fill="#334155" stroke="#64748b" stroke-width="1.2"/>
-          <!-- Sensorlinie rød/hvid -->
-          <line x1="24" y1="14" x2="24" y2="50" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
-          <text x="24" y="68" font-size="9" font-family="-apple-system, sans-serif" fill="#94a3b8" text-anchor="middle" font-weight="600">0 m</text>
+        <g transform="translate(16, ${centerY - 22})">
+          <rect x="0" y="6" width="38" height="34" rx="5" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+          <rect x="11" y="1" width="16" height="6" rx="2" fill="#334155"/>
+          <circle cx="19" cy="23" r="10" fill="#0f172a" stroke="#64748b" stroke-width="1.3"/>
+          <rect x="36" y="14" width="13" height="18" rx="2" fill="#334155" stroke="#64748b" stroke-width="1"/>
+          <line x1="19" y1="9" x2="19" y2="37" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/>
+          <text x="19" y="50" font-size="8.5" font-family="-apple-system, sans-serif" fill="#94a3b8" text-anchor="middle" font-weight="600">0 m</text>
         </g>
       `;
 
       // Målestok bundlinie
       const baselineSvg = `
-        <line x1="${cameraX}" y1="180" x2="${width - 15}" y2="180" stroke="rgba(255,255,255,0.3)" stroke-width="1.8"/>
+        <line x1="${cameraX}" y1="${baselineY}" x2="${width - 15}" y2="${baselineY}" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
       `;
 
       this.svgDiagram.innerHTML = `
-        <rect width="100%" height="100%" fill="#070a0f" rx="10"/>
+        <rect width="100%" height="100%" fill="#070a0f" rx="8"/>
         ${raysSvg}
         ${dofZoneSvg}
         ${baselineSvg}
